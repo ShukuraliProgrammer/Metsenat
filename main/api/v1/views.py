@@ -6,6 +6,7 @@ from .filters import SponsorFilter
 from django.db.models import Sum
 from django.contrib import messages
 from .pagination import CustomPagination
+from .permissions import AdminORRead
 
 from main.models import (
     SponsorModel,
@@ -56,7 +57,7 @@ from rest_framework.permissions import (
 #     # No backend authenticated the credentials
 
 class DashboardView(views.APIView):
-    permission_classes = []
+    permission_classes = [IsAdminUser,AdminORRead]
 
     def get(self, request, *args, **kwargs):
         all_payed_money = SponsorshipModel.objects.aggregate(Sum('money'))['money__sum']
@@ -75,11 +76,13 @@ class SponsorView(generics.ListCreateAPIView):
     pagination_class = CustomPagination
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ('status', 'choice_money', 'updated_date')
+    permission_classes = [IsAdminUser]
 
 
 class SponsorDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SponsorModel.objects.all()
     serializer_class = SponsorDetailSerializer
+    permission_classes = [IsAdminUser,IsAuthenticated]
 
 
 class UniversityView(generics.ListCreateAPIView):
@@ -94,11 +97,13 @@ class StudentView(generics.ListCreateAPIView):
     serializer_class = StudentSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ('student_type', 'university')
+    permission_classes = [IsAuthenticated,IsAdminUser]
 
 
 class StudentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = StudentModel.objects.all()
     serializer_class = StudentDetailSerializer
+    permission_classes = [IsAuthenticated,IsAdminUser]
 
 
 
